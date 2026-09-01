@@ -1,0 +1,15 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "brew",
+  "version": "1.0.0",
+  "description": "Generate, send, schedule, automate, and analyze on-brand email with Brew",
+  "author": {
+    "name": "Brew",
+    "email": "support@brew.new",
+    "url": "https://brew.new"
+  },
+  "homepage": "https://brew.new",
+  "repository": "https://github.com/GetBrew/cursor-plugin",
+  "license": "MIT",
+  "keywords": ["email", "brew", "campaigns", "mcp", "marketing"]
+}

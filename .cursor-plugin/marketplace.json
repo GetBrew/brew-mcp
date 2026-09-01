@@ -1,0 +1,13 @@
+{
+  "name": "brew-skills",
+  "owner": {
+    "name": "Brew",
+    "email": "support@brew.new"
+  },
+  "plugins": [
+    {
+      "name": "brew",
+      "source": "./"
+    }
+  ]
+}

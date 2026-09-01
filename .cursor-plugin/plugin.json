@@ -1,0 +1,16 @@
+{
+  "name": "brew",
+  "displayName": "Brew",
+  "description": "Skills and MCP server for the Brew email platform — generate, send, schedule, automate, segment, and analyze campaigns from Cursor.",
+  "version": "1.0.0",
+  "logo": "assets/logo.svg",
+  "author": {
+    "name": "Brew",
+    "email": "support@brew.new",
+    "url": "https://brew.new"
+  },
+  "homepage": "https://brew.new",
+  "repository": "https://github.com/GetBrew/cursor-plugin",
+  "license": "MIT",
+  "keywords": ["email", "brew", "campaigns", "mcp", "marketing", "automations"]
+}

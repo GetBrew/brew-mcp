@@ -1,0 +1,22 @@
+{
+  "name": "brew",
+  "version": "1.0.0",
+  "description": "Brew skills for Grok — generate on-brand emails, send and schedule campaigns, build automations, manage audiences, and read analytics over the hosted Brew MCP.",
+  "logo": "assets/logo.svg",
+  "author": {
+    "name": "Brew",
+    "email": "support@brew.new",
+    "url": "https://brew.new/"
+  },
+  "homepage": "https://brew.new/",
+  "repository": "https://github.com/GetBrew/cursor-plugin",
+  "license": "MIT",
+  "keywords": [
+    "brew",
+    "email",
+    "campaigns",
+    "automations",
+    "audiences",
+    "marketing"
+  ]
+}
