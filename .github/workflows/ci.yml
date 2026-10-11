@@ -15,5 +15,5 @@ jobs:
       - run: python3 scripts/check-metadata.py
       - name: Check skill tools against the published documentation
         run: |
-          curl --fail --silent --show-error --location --max-time 30 https://raw.githubusercontent.com/GetBrew/docs/main/snippets/generated/mcp-tools.mdx --output /tmp/mcp-tools.mdx
+          curl --fail --silent --show-error --location --max-time 30 https://docs.brew.new/api-reference/mcp/tools.md --output /tmp/mcp-tools.mdx
           python3 scripts/check-metadata.py --catalog /tmp/mcp-tools.mdx
