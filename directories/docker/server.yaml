@@ -1,0 +1,23 @@
+name: brew
+type: remote
+dynamic:
+  tools: true
+meta:
+  category: communication
+  tags:
+    - communication
+    - email
+    - email-marketing
+    - automation
+    - remote
+about:
+  title: Brew
+  description: The AI-native email platform for modern teams and AI agents. Design on-brand emails, send campaigns, build automations, manage audiences and sending domains, and read analytics.
+  icon: https://raw.githubusercontent.com/GetBrew/brew-mcp/main/assets/icon-512.png
+remote:
+  transport_type: streamable-http
+  url: https://brew.new/api/mcp
+oauth:
+  - provider: brew
+    secret: brew.personal_access_token
+    env: BREW_PERSONAL_ACCESS_TOKEN

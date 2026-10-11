@@ -1,0 +1,19 @@
+{
+  "name": "brew-mcp",
+  "description": "Brew for Claude Code: the Brew MCP server and skill",
+  "owner": {
+    "name": "Brew",
+    "email": "support@brew.new",
+    "url": "https://brew.new"
+  },
+  "plugins": [
+    {
+      "name": "brew",
+      "source": "./",
+      "displayName": "Brew",
+      "description": "Brew skill and MCP server for Claude Code. Design, send and automate on-brand email from a prompt.",
+      "category": "productivity",
+      "tags": ["email", "mcp", "campaigns", "automations"]
+    }
+  ]
+}

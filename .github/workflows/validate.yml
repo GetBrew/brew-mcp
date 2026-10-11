@@ -1,0 +1,41 @@
+name: Validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: validate-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  manifests:
+    name: Manifests, versions, server.json, voice
+    runs-on: ${{ vars.CI_RUNNER_SMALL || 'ubuntu-latest' }}
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      # JSON syntax of every manifest, one version across all of them, one MCP
+      # endpoint with no headers, a publishable server.json, and the Brew voice
+      # (see scripts/validate.py for the exact rules).
+      - name: Validate
+        run: python3 scripts/validate.py
+
+  claude-plugin:
+    name: Claude Code plugin and marketplace
+    runs-on: ${{ vars.CI_RUNNER_SMALL || 'ubuntu-latest' }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Claude Code
+        run: npm install --global @anthropic-ai/claude-code@2.1.296
+      - name: Validate plugin.json, marketplace.json and .mcp.json
+        run: claude plugin validate . --strict

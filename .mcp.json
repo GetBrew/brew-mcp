@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "brew": {
+      "type": "http",
+      "url": "https://brew.new/api/mcp"
+    }
+  }
+}
