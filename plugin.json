@@ -9,7 +9,7 @@
     "url": "https://brew.new"
   },
   "homepage": "https://brew.new",
-  "repository": "https://github.com/GetBrew/cursor-plugin",
+  "repository": "https://github.com/GetBrew/brew-mcp",
   "license": "MIT",
   "keywords": ["email", "brew", "campaigns", "mcp", "marketing"]
 }

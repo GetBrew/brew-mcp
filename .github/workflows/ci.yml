@@ -1,0 +1,19 @@
+name: Metadata
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  metadata:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - run: python3 scripts/check-metadata.py
+      - name: Check skill tools against the published documentation
+        run: |
+          curl --fail --silent --show-error --location --max-time 30 https://docs.brew.new/api-reference/mcp/tools.md --output /tmp/mcp-tools.mdx
+          python3 scripts/check-metadata.py --catalog /tmp/mcp-tools.mdx
