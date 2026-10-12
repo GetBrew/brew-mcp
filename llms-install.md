@@ -23,7 +23,7 @@ Brew is the AI-native email platform for modern teams and AI agents. Its MCP ser
 }
 ```
 
-3. Save. Cline opens the browser so the user can sign in with Brew and choose one brand or all brands. Ask the user to finish that sign-in; do not try to complete it for them.
+3. Save. Cline opens the browser so the user can sign in with Brew and choose one brand or the whole organization. Ask the user to finish that sign-in; do not try to complete it for them.
 4. Confirm the connection by calling the `get_brew_capabilities` tool. It lists the tools available to this connection.
 
 ## API key alternative
@@ -49,6 +49,6 @@ Ask the user for the key. Never invent one, and never commit it to a repository.
 
 ## Safety
 
-Anything that emails real people or deletes contact data returns a confirmation request on OAuth connections. Show it to the user and repeat the call with `confirmed: true` and the request's `confirmation_id` only after they approve. Always pass a unique `idempotency_key` when sending.
+Anything that emails real people or deletes contact data returns a confirmation request on OAuth and organization connections. Show it to the user and repeat the call with `confirmed: true` and the request's `confirmation_id` only after they approve. Brand API-key connections do not pause, so get the user's approval first. Pass an `idempotency_key` when sending: a new key for each intended send, and the same key when retrying it.
 
 Docs: https://docs.brew.new/api-reference/mcp/connect-your-client

@@ -3,15 +3,22 @@
 
 Checks, in order:
   1. every JSON file parses
-  2. every manifest carries the same version (and the tag, with --tag)
-  3. every manifest points at the one canonical MCP endpoint, with no headers
-  4. server.json is a valid, publishable MCP Registry entry
-  5. skills and referenced assets exist
-  6. voice: no "ESP", no em or en dashes, no removed image-generation tools
+  2. every plugin manifest: name, repository, license, logo and icon files
+  3. every plugin manifest carries the same version, matching CHANGELOG.md
+     (and the tag, with --tag)
+  4. every MCP config points at the one canonical MCP endpoint, with no headers
+  5. server.json is a valid, publishable MCP Registry entry (it versions
+     separately from the plugin manifests, see check_server_json)
+  6. the Claude Code marketplace lists the plugin
+  7. skills, rules and referenced assets exist and their frontmatter is valid
+  8. voice: no "ESP", no em or en dashes, no removed image-generation tools
+  9. with --catalog FILE: every tool the skill, rule and README text names
+     exists in the published tool catalog (docs.brew.new/api-reference/mcp/tools.md)
 
-Usage: python3 scripts/validate.py [--tag v1.2.3]
+Usage: python3 scripts/validate.py [--tag v1.2.3] [--catalog tools.md]
 """
 
+import argparse
 import json
 import os
 import re
@@ -20,17 +27,47 @@ import sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MCP_URL = "https://brew.new/api/mcp"
 REPO_URL = "https://github.com/GetBrew/brew-mcp"
+ICON_PREFIX = "https://brew.new/logo/"
 SKIP_DIRS = {".git", "node_modules"}
 
-# Manifests whose "version" must move together.
+# Plugin manifests whose "version" must move together. server.json is not in
+# this list: the MCP Registry version follows MCP_SERVER_JSON_VERSION in
+# brew-v2 (lib/mcp/server-json.ts), which the website serves at
+# /.well-known/mcp/server.json, and the registry refuses a version it already
+# has. It moves when the served file changes, not on every plugin release.
 VERSIONED = [
     ".claude-plugin/plugin.json",
     ".cursor-plugin/plugin.json",
     ".grok-plugin/plugin.json",
     "plugin.json",
     "gemini-extension.json",
-    "server.json",
 ]
+
+# The manifests that describe the plugin itself also name the repository and
+# the license. gemini-extension.json carries neither.
+PLUGIN_MANIFESTS = VERSIONED[:4]
+
+# Guided workflows are MCP prompts, not tools. Several start with a verb a tool
+# also uses (set_up_automation), so the catalog check skips them.
+GUIDED_WORKFLOWS = {
+    "launch_email_campaign",
+    "build_segment_and_send",
+    "set_up_automation",
+    "wire_trigger_from_code",
+    "analyze_campaign_performance",
+    "personalize_with_crm",
+    "improve_deliverability",
+    "configure_brand",
+    "run_audience_automation",
+    "onboard_brand",
+    "report_mcp_issue",
+}
+
+# Real tools the docs table does not list (organization connections only).
+EXTRA_TOOLS = {"create_brand"}
+
+# Text the catalog check reads for tool names.
+CATALOG_FILES = ["README.md", "GEMINI.md", "llms-install.md"]
 
 # Text files the voice check reads. This script is excluded on purpose: its
 # patterns spell out the characters it forbids.
@@ -93,6 +130,26 @@ def check_json_syntax():
     print(f"json: {count} files parsed")
 
 
+def check_manifests():
+    for relpath in VERSIONED:
+        data = load_json(relpath)
+        if data is None:
+            continue
+        if data.get("name") != "brew":
+            fail(f'{relpath}: name must be "brew"')
+        if relpath in PLUGIN_MANIFESTS:
+            if data.get("repository") != REPO_URL:
+                fail(f"{relpath}: repository must be {REPO_URL}")
+            if data.get("license") != "MIT":
+                fail(f'{relpath}: license must be "MIT"')
+        for field in ("logo", "icon"):
+            if field in data and not os.path.isfile(
+                os.path.join(ROOT, os.path.normpath(data[field]))
+            ):
+                fail(f"{relpath}: {field} {data[field]!r} is not a file in this repository")
+    print(f"manifests: {len(VERSIONED)} plugin manifests are named and complete")
+
+
 def check_versions(tag):
     versions = {}
     for relpath in VERSIONED:
@@ -134,6 +191,12 @@ def check_endpoints():
         (".mcp.json", "url"),
         ("mcp.json", "url"),
         ("gemini-extension.json", "httpUrl"),
+    ]
+    known = {relpath for relpath, _ in configs}
+    configs += [
+        (rel(path), "url")
+        for path in sorted(walk_files())
+        if path.endswith(".mcp.json") and rel(path) not in known
     ]
     for relpath, field in configs:
         entry = servers_of(load_json(relpath))
@@ -183,7 +246,23 @@ def check_server_json():
         fail(f"server.json: remotes must be one streamable-http entry at {MCP_URL} with no headers")
     if "packages" in data:
         fail("server.json: this is a remote-only server, so no packages")
-    print("server.json: registry entry is sane")
+    version = data.get("version")
+    if not isinstance(version, str) or not SEMVER.match(version):
+        fail(f"server.json: version {version!r} is not semver")
+    # Same icons brew-v2 serves: PNG first (clients must render PNG and JPEG;
+    # SVG is optional), then the light and dark SVG marks.
+    icons = data.get("icons")
+    if not isinstance(icons, list) or not icons:
+        fail("server.json: icons are required (the registry shows them in listings)")
+    else:
+        for icon in icons:
+            if not str(icon.get("src", "")).startswith(ICON_PREFIX):
+                fail(f"server.json: icon {icon.get('src')!r} must be served from {ICON_PREFIX}")
+            if not icon.get("mimeType"):
+                fail(f"server.json: icon {icon.get('src')!r} needs a mimeType")
+        if icons[0].get("mimeType") != "image/png":
+            fail("server.json: the first icon must be a PNG")
+    print(f"server.json: registry entry {version} is sane")
 
 
 def check_claude_marketplace():
@@ -199,6 +278,29 @@ def check_claude_marketplace():
             fail('marketplace.json: the plugin lives at the repo root, so source must be "./"')
 
 
+def read_frontmatter(path):
+    """The YAML between the leading --- lines, or None."""
+    with open(path, encoding="utf-8") as handle:
+        text = handle.read()
+    if not text.startswith("---\n"):
+        return None
+    end = text.find("\n---", 4)
+    return text[4:end] if end != -1 else None
+
+
+def check_frontmatter_scalars(relpath, front):
+    """A plain YAML scalar cannot hold ": " (a nested mapping) or " #" (a comment)."""
+    for line in front.splitlines():
+        match = re.match(r"^[A-Za-z_-]+:\s*(\S.*)$", line)
+        if not match:
+            continue
+        value = match.group(1)
+        if value[0] in "\"'[{|>&*!":
+            continue
+        if ": " in value or " #" in value:
+            fail(f"{relpath}: quote this frontmatter value, it contains ': ' or ' #': {line.strip()[:60]}")
+
+
 def check_files():
     skills = os.path.join(ROOT, "skills")
     names = sorted(os.listdir(skills)) if os.path.isdir(skills) else []
@@ -209,13 +311,22 @@ def check_files():
         if not os.path.isfile(path):
             fail(f"skills/{name}: SKILL.md is missing")
             continue
-        head = open(path, encoding="utf-8").read().split("---")
-        front = head[1] if len(head) > 2 else ""
+        front = read_frontmatter(path) or ""
         match = re.search(r"^name:\s*(\S+)\s*$", front, re.M)
         if not match or match.group(1) != name:
             fail(f"skills/{name}/SKILL.md: frontmatter name must be {name!r}")
         if not re.search(r"^description:\s*\S", front, re.M):
             fail(f"skills/{name}/SKILL.md: frontmatter description is required")
+        check_frontmatter_scalars(f"skills/{name}/SKILL.md", front)
+    rules = os.path.join(ROOT, "rules")
+    for name in sorted(os.listdir(rules)) if os.path.isdir(rules) else []:
+        if not name.endswith(".mdc"):
+            continue
+        front = read_frontmatter(os.path.join(rules, name))
+        if front is None or not re.search(r"^description:\s*\S", front, re.M):
+            fail(f"rules/{name}: frontmatter with a description is required")
+            continue
+        check_frontmatter_scalars(f"rules/{name}", front)
     for relpath in [
         "assets/logo.svg",
         "assets/icon-400.png",
@@ -227,16 +338,11 @@ def check_files():
     ]:
         if not os.path.isfile(os.path.join(ROOT, relpath)):
             fail(f"{relpath}: file is missing")
-    tools = load_json("directories/docker/tools.json") or []
-    seen = set()
-    for tool in tools:
-        name = tool.get("name")
-        if not name or not tool.get("description"):
-            fail(f"directories/docker/tools.json: every tool needs a name and a description ({tool})")
-        if name in seen:
-            fail(f"directories/docker/tools.json: duplicate tool {name}")
-        seen.add(name)
-    print(f"files: {len(names)} skill(s), assets and {len(tools)} docker tools present")
+    # Docker's CONTRIBUTING: a remote server always ships `[]` here; its tools
+    # come from the live server (`dynamic: tools: true` in server.yaml).
+    if load_json("directories/docker/tools.json") != []:
+        fail("directories/docker/tools.json: a remote server's tools.json must be []")
+    print(f"files: {len(names)} skill(s), rules and assets present")
 
 
 def check_voice():
@@ -253,17 +359,51 @@ def check_voice():
     print(f"voice: {scanned} text files checked")
 
 
+def check_catalog(catalog):
+    """Every tool the shipped text names must exist in the published catalog."""
+    with open(catalog, encoding="utf-8") as handle:
+        tools = set(re.findall(r"^\| `([^`]+)` \|", handle.read(), re.M))
+    if not tools:
+        fail(f"{catalog}: no tools found in the catalog")
+        return
+    tools |= EXTRA_TOOLS
+    # A tool name is verb_noun. The verbs are the ones the catalog itself uses,
+    # so ids such as brand_id or idempotency_key are never mistaken for tools.
+    # "control" catches the retired control_email_send and control_audience_run.
+    verbs = {name.split("_")[0] for name in tools if "_" in name} | {"control"}
+    pattern = re.compile(r"`((?:%s)(?:_[a-z]+)+)`" % "|".join(sorted(verbs)))
+    paths = [os.path.join(ROOT, name) for name in CATALOG_FILES]
+    for folder, suffix in (("skills", ".md"), ("rules", ".mdc")):
+        for base, _dirs, files in os.walk(os.path.join(ROOT, folder)):
+            paths += [os.path.join(base, f) for f in files if f.endswith(suffix)]
+    checked = 0
+    for path in sorted(paths):
+        if not os.path.isfile(path):
+            continue
+        checked += 1
+        with open(path, encoding="utf-8") as handle:
+            mentioned = set(pattern.findall(handle.read()))
+        unknown = sorted(mentioned - tools - GUIDED_WORKFLOWS)
+        if unknown:
+            fail(f"{rel(path)}: tools missing from the published catalog: {', '.join(unknown)}")
+    print(f"catalog: tool names in {checked} files match the {len(tools)} published tools")
+
+
 def main():
-    tag = None
-    if "--tag" in sys.argv:
-        tag = sys.argv[sys.argv.index("--tag") + 1]
+    parser = argparse.ArgumentParser(description="Validate the Brew MCP plugin repository.")
+    parser.add_argument("--tag", help="release tag (v1.2.3) the manifests must match")
+    parser.add_argument("--catalog", help="published MCP tool catalog (tools.md) to check tool names against")
+    args = parser.parse_args()
     check_json_syntax()
-    check_versions(tag)
+    check_manifests()
+    check_versions(args.tag)
     check_endpoints()
     check_server_json()
     check_claude_marketplace()
     check_files()
     check_voice()
+    if args.catalog:
+        check_catalog(args.catalog)
     if errors:
         print(f"\n{len(errors)} problem(s):", file=sys.stderr)
         for error in errors:

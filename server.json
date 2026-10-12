@@ -9,6 +9,25 @@
     "url": "https://github.com/GetBrew/brew-mcp",
     "source": "github"
   },
+  "icons": [
+    {
+      "src": "https://brew.new/logo/circle_orange.png",
+      "mimeType": "image/png",
+      "sizes": ["1500x1500"]
+    },
+    {
+      "src": "https://brew.new/logo/favicon-light.svg",
+      "mimeType": "image/svg+xml",
+      "sizes": ["any"],
+      "theme": "light"
+    },
+    {
+      "src": "https://brew.new/logo/favicon-dark.svg",
+      "mimeType": "image/svg+xml",
+      "sizes": ["any"],
+      "theme": "dark"
+    }
+  ],
   "remotes": [
     {
       "type": "streamable-http",

@@ -4,13 +4,13 @@ Brew MCP server, agent plugins and skills for Claude, Cursor, Codex, Gemini, VS 
 
 [Brew](https://brew.new) is the AI-native email platform for modern teams and AI agents. This repository is the single public home of Brew's official remote [Model Context Protocol](https://modelcontextprotocol.io/) integration: one hosted server, one skill, and a ready-made plugin or extension for each client.
 
-Design on-brand emails, send and schedule campaigns, build automations, manage contacts and audiences, check sending domains, and read analytics from the signed-in Brew brand, all from your agent.
+Design on-brand emails, send and schedule campaigns, build automations, manage contacts and audiences, check sending domains, and read analytics within the Brew brand or organization you connect, all from your agent.
 
 ```
 https://brew.new/api/mcp
 ```
 
-Auth is OAuth 2.1 with Dynamic Client Registration and PKCE. Your client registers itself and opens Brew to sign in, and you choose one brand or all brands. There is no API key or client ID to configure, and you can revoke the grant anytime in Brew under **Settings → MCP**.
+Auth is OAuth 2.1 with Dynamic Client Registration and PKCE. Your client registers itself and opens Brew to sign in, and you choose one brand or your whole organization. There is no API key or client ID to configure, and you can revoke the grant anytime in Brew under **Settings → MCP**.
 
 ## Install
 
@@ -39,7 +39,7 @@ Prefer only the MCP server? Run `claude mcp add --transport http brew https://br
 
 [<img src="https://cursor.com/deeplink/mcp-install-dark.svg" alt="Add Brew to Cursor" height="32">](https://cursor.com/en/install-mcp?name=brew&config=eyJ1cmwiOiJodHRwczovL2JyZXcubmV3L2FwaS9tY3AifQ)
 
-Or install the plugin from the marketplace: open **Cursor Settings → Plugins**, search for **Brew** and click **Install**, or run `/add-plugin brew` in chat. To add the server by hand, put this in `~/.cursor/mcp.json` (or `.cursor/mcp.json` for one project):
+Install in Cursor with one click, or add the server by hand: put this in `~/.cursor/mcp.json` (or `.cursor/mcp.json` for one project):
 
 ```json
 {
@@ -51,7 +51,7 @@ Or install the plugin from the marketplace: open **Cursor Settings → Plugins**
 }
 ```
 
-Cursor opens your browser to sign in with Brew. The same listing powers Brew in Grok Bot.
+Cursor opens your browser to sign in with Brew.
 
 ### VS Code
 
@@ -156,16 +156,6 @@ npx skills add GetBrew/brew-mcp
 
 Working from a terminal or CI instead? The Brew CLI has its own skill: `npx skills add GetBrew/brew-cli`.
 
-## Add email to your app
-
-Building an app and need password resets, verification mail, receipts or lifecycle email? Run one command in your project:
-
-```
-npx brew.new init
-```
-
-It is covered step by step in the [developer quickstart](https://docs.brew.new/developers/quickstart).
-
 ## What agents can do
 
 | Category | Capabilities |
@@ -178,17 +168,17 @@ It is covered step by step in the [developer quickstart](https://docs.brew.new/d
 | Analytics | Overview, per-send and per-recipient engagement, automation performance, insights |
 | Brand and templates | Brand identity, the brand image library, and the public template and sequence gallery |
 
-The hosted runtime is the source of truth for tool names and schemas. Call `get_brew_capabilities` first to load the current catalog and the guided workflows (`launch_email_campaign`, `build_segment_and_send`, `set_up_automation`, `wire_trigger_from_code`, `analyze_campaign_performance`, `personalize_with_crm`, `improve_deliverability`).
+The hosted runtime is the source of truth for tool names and schemas. Call `get_brew_capabilities` first to load the current catalog and the guided workflows (`launch_email_campaign`, `build_segment_and_send`, `set_up_automation`, `wire_trigger_from_code`, `analyze_campaign_performance`, `personalize_with_crm`, `improve_deliverability`, `configure_brand`, `run_audience_automation` and, on organization connections, `onboard_brand`).
 
 ## Send safety
 
-On OAuth connections, anything that emails real people or deletes contact data pauses first. Call the tool, such as `send_email`, and Brew returns a confirmation request with the recipient count. Show it to the user. After they approve, call again with the same inputs plus `confirmed: true` and the request's `confirmation_id`. Use a new `idempotency_key` for each intended operation and reuse the same `idempotency_key` on retries so a retry never sends twice. Confirmation requirements also cover other sends and destructive operations; see [Authentication and scoping](https://docs.brew.new/api-reference/mcp/authentication-and-scoping).
+On OAuth and organization connections, anything that emails real people or deletes contact data pauses first. Call the tool, such as `send_email`, and Brew returns a confirmation request with the recipient count. Show it to the user. After they approve, call again with the same inputs plus `confirmed: true` and the request's `confirmation_id`. Use a new `idempotency_key` for each intended operation, and reuse the same `idempotency_key` on retries so a retry never sends twice. Confirmation requirements also cover other sends and destructive operations; see [Authentication and scoping](https://docs.brew.new/api-reference/mcp/authentication-and-scoping). Brand API-key connections do not pause, so get the user's approval before the first live call.
 
 One-off live sends require a verified marketing-purpose domain and existing opted-in contacts. Event-triggered transactional mail follows its automation and domain-purpose contract.
 
 ## Before you connect
 
-You need a Brew account with access to the brand the agent should use. Tool calls run scoped to the brand (or brands) you pick when you sign in.
+You need a Brew account with access to the brand the agent should use. The public OAuth scope is `brew:all`. A brand connection acts on its bound brand. An organization connection requires `brand_id` for brand-scoped tools; call `list_brands` and clarify the target when necessary.
 
 ## Docs
 
@@ -203,7 +193,7 @@ Logo is Brew's official mark (https://brew.new/logo.svg).
 
 ## For maintainers
 
-One version number moves everywhere (`.claude-plugin/plugin.json`, `.cursor-plugin/plugin.json`, `.grok-plugin/plugin.json`, `plugin.json`, `gemini-extension.json`, `server.json`). Every pull request runs `python3 scripts/validate.py`, and a `v*` tag publishes a GitHub release.
+One version number moves across the plugin manifests (`.claude-plugin/plugin.json`, `.cursor-plugin/plugin.json`, `.grok-plugin/plugin.json`, `plugin.json`, `gemini-extension.json`) and `CHANGELOG.md`. `server.json` versions separately: it mirrors the registry entry brew.new serves at `/.well-known/mcp/server.json`, so its version follows `MCP_SERVER_JSON_VERSION` in the Brew app and the registry refuses a version it already has. Every pull request runs `python3 scripts/validate.py`, and a `v*` tag publishes a GitHub release.
 
 | Path | Used by |
 | --- | --- |

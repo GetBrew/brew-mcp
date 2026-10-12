@@ -10,10 +10,10 @@
 - Docker MCP Registry entry prepared under `directories/docker/`
 - Skill rewritten for the current tool names and the confirmation flow
 - Copy now describes Brew as the AI-native email platform; image generation claims removed
-- Validation and release workflows; all manifest versions move together
+- Validation and release workflows: the plugin manifest versions move together, and `server.json` (registry entry, icons included) versions with the entry brew.new serves
 
 ## 1.0.0 - 2026-08-31
 
-- Initial Cursor Marketplace plugin for the hosted Brew MCP server
+- Initial Cursor plugin for the hosted Brew MCP server
 - OAuth 2.1 with Dynamic Client Registration (no API key to paste)
 - Remote Streamable HTTP endpoint at https://brew.new/api/mcp
