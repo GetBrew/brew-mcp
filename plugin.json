@@ -1,8 +1,8 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "brew",
-  "version": "1.0.0",
-  "description": "Generate, send, schedule, automate, and analyze on-brand email with Brew",
+  "version": "1.1.0",
+  "description": "Design, send, schedule, automate, and analyze on-brand email with Brew",
   "author": {
     "name": "Brew",
     "email": "support@brew.new",

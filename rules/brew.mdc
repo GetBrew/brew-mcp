@@ -1,0 +1,26 @@
+---
+description: "Use the Brew MCP tools for email work: designing emails, sending campaigns, automations, audiences, sending domains and analytics"
+alwaysApply: false
+---
+
+# Brew
+
+Brew is the AI-native email platform for modern teams and AI agents. Use its MCP tools (server `brew`, `https://brew.new/api/mcp`) whenever the task is about email.
+
+## When to use Brew
+
+- Designing, editing, importing or cloning an email, or checking it before a send.
+- Sending a test or a campaign, scheduling it, or reading its analytics.
+- Building or testing an automation, and firing an app event trigger from code.
+- Managing audiences, contacts, contact fields and sending domains.
+
+Call `get_brew_capabilities` first for the live tool list. Do not guess tool names.
+
+## Rules
+
+- Never invent ids. `emailId`, `audienceId`, `domainId`, `automationId`, `triggerEventId` and `sendId` come from a `list_*` or `get_*` result.
+- Ask the user before anything that emails real people or deletes contact data. On OAuth and organization connections, a live `send_email` or `delete_contacts` returns a confirmation request first; show it, and only after the user approves repeat the same call with `confirmed: true` and the request's `confirmation_id`.
+- Send a test first (`send_email` with `test: true`) and pass an `idempotency_key` on every send and trigger fire: a new key for each intended operation, and the same key when you retry it.
+- Live sends need a verified sending domain. Use `list_domains`, and `create_domain` then `verify_domain` if none exists.
+- On an organization connection, pass a `brand_id` from `list_brands` to brand tools.
+- Never put a Brew API key in source code or commit it. Read it from an environment variable.

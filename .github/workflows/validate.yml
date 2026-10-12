@@ -1,0 +1,52 @@
+name: Validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: validate-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  manifests:
+    name: Manifests, versions, server.json, voice, tool names
+    runs-on: ${{ vars.CI_RUNNER_SMALL || 'ubuntu-latest' }}
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      # JSON syntax of every manifest, one version across the plugin manifests,
+      # one MCP endpoint with no headers, a publishable server.json, valid
+      # frontmatter, and the Brew voice (see scripts/validate.py for the rules).
+      - name: Validate
+        run: python3 scripts/validate.py
+      # Every tool the skill, rule and README text names must exist in the
+      # published catalog.
+      - name: Check tool names against the published catalog
+        run: |
+          curl --fail --silent --show-error --location --max-time 30 \
+            https://docs.brew.new/api-reference/mcp/tools.md --output "$RUNNER_TEMP/mcp-tools.md"
+          python3 scripts/validate.py --catalog "$RUNNER_TEMP/mcp-tools.md"
+
+  claude-plugin:
+    name: Claude Code plugin and marketplace
+    runs-on: ${{ vars.CI_RUNNER_SMALL || 'ubuntu-latest' }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+      - name: Install Claude Code
+        run: npm install --global @anthropic-ai/claude-code@2.1.296
+      - name: Validate plugin.json, marketplace.json and .mcp.json
+        run: claude plugin validate . --strict
