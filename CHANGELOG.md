@@ -9,6 +9,7 @@
 - One-click install links for Cursor and VS Code in the README
 - Docker MCP Registry entry prepared under `directories/docker/`
 - Skill rewritten for the current tool names and the confirmation flow
+- Two skills for app developers: `brew-add-email-to-app` (auth and lifecycle email, per auth stack) and `brew-migrate-from-resend`
 - Copy now describes Brew as the AI-native email platform; image generation claims removed
 - Validation and release workflows: the plugin manifest versions move together, and `server.json` (registry entry, icons included) versions with the entry brew.new serves
 

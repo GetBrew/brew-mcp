@@ -47,6 +47,8 @@ Live sends need a verified sending domain. If none exists, `create_domain` retur
 
 To wire the fire call into application code, `get_trigger_contract` returns a typed payload (`format: "ts"`) or a full wiring brief (`format: "skill"`).
 
+To add auth and lifecycle email to an app (sign-up, password reset, magic link, welcome), use the `brew-add-email-to-app` skill. To move an app's email from Resend, use `brew-migrate-from-resend`.
+
 ## Guided workflows
 
 The server also offers prompts: `launch_email_campaign`, `build_segment_and_send`, `set_up_automation`, `wire_trigger_from_code`, `analyze_campaign_performance`, `personalize_with_crm`, `improve_deliverability`, `configure_brand`, `run_audience_automation` and `report_mcp_issue`. Organization connections also offer `onboard_brand`.

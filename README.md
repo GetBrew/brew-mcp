@@ -2,7 +2,7 @@
 
 Brew MCP server, agent plugins and skills for Claude, Cursor, Codex, Gemini, VS Code and more.
 
-[Brew](https://brew.new) is the AI-native email platform for modern teams and AI agents. This repository is the single public home of Brew's official remote [Model Context Protocol](https://modelcontextprotocol.io/) integration: one hosted server, one skill, and a ready-made plugin or extension for each client.
+[Brew](https://brew.new) is the AI-native email platform for modern teams and AI agents. This repository is the single public home of Brew's official remote [Model Context Protocol](https://modelcontextprotocol.io/) integration: one hosted server, three skills, and a ready-made plugin or extension for each client.
 
 Design on-brand emails, send and schedule campaigns, build automations, manage contacts and audiences, check sending domains, and read analytics within the Brew brand or organization you connect, all from your agent.
 
@@ -20,7 +20,7 @@ Pick your client. Every option below connects to the same server.
 
 **Claude.ai and Claude Desktop (connector).** Open **Settings → Connectors**, choose **Add custom connector**, paste `https://brew.new/api/mcp`, then **Connect** and sign in with Brew.
 
-**Claude Code (plugin).** The plugin adds the MCP server and the Brew skill:
+**Claude Code (plugin).** The plugin adds the MCP server and the Brew skills:
 
 ```
 /plugin marketplace add GetBrew/brew-mcp
@@ -148,7 +148,15 @@ If your client cannot complete the OAuth handshake, create an API key in Brew un
 
 ## Skills
 
-The `brew` skill teaches an agent the safe order of operations: design, test, confirm, send, measure. Install it into Claude Code, Cursor, Codex and many other agents with the open [skills CLI](https://skills.sh):
+Three skills teach an agent how to work with Brew:
+
+| Skill | Use it to |
+| --- | --- |
+| `brew` | Design, test, confirm, send and measure: the safe order of operations for emails, campaigns, automations, audiences and domains |
+| `brew-add-email-to-app` | Add auth and lifecycle email to an app: set up the keyed emails, wire them into Better Auth, Auth.js, Supabase, Clerk, Firebase or custom auth with `@brew.new/sdk`, and verify with a sandbox send |
+| `brew-migrate-from-resend` | Move an app from Resend: inventory the sends, import React Email files and Resend Templates, set up each email by key, swap the code, move contacts and cut over |
+
+Install them into Claude Code, Cursor, Codex and many other agents with the open [skills CLI](https://skills.sh):
 
 ```
 npx skills add GetBrew/brew-mcp
@@ -164,6 +172,7 @@ Working from a terminal or CI instead? The Brew CLI has its own skill: `npx skil
 | Sending | Test sends, one-off campaigns, scheduled and gradual delivery, pause, resume and cancel |
 | Audiences and contacts | Saved audience filters, contact updates, CSV updates, email validation, custom fields |
 | Automations | Triggered flows with waits, filters and splits; test, publish, run, and fire events from app code |
+| App emails | Auth and lifecycle emails set up by trigger key, sent from code with `brew.send`, with a team-only sandbox until a domain verifies; React Email files and Resend templates imported as designs |
 | Domains | Register, verify and monitor sending-domain health (SPF, DKIM, DMARC) and inbox placement |
 | Analytics | Overview, per-send and per-recipient engagement, automation performance, insights |
 | Brand and templates | Brand identity, the brand image library, and the public template and sequence gallery |
