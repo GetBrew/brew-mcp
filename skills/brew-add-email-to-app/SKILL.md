@@ -35,7 +35,7 @@ Call `set_up_app_email` with `setup: { kind: 'kit', stack: '<stack>' }`. It crea
 - The call publishes automations that email the person named in each payload, so on OAuth and organization connections it returns a confirmation request first. Show it to the user. After they approve, repeat the same call with `confirmed: true` and the request's `confirmation_id`.
 - Each entry in `results` is `ok: true` with its `sender`, `payloadSchema` and `fireExample`, or `ok: false` with an `error`. One failing key does not stop the others; run the call again to finish them. `stack.snippets` holds code for the chosen library.
 - A re-run changes only what differs. A design someone edited in Brew is kept unless the call passes `overwrite: true` (otherwise `409 APP_EMAIL_EDITED_IN_BREW`).
-- For a key of the app's own, such as `order.shipped`, use `setup: { kind: 'one', triggerKey, source: { format: 'jsx' | 'html' | 'mjml', content } }`, with `{{ trigger.<field> }}` merge tags in the source. Keys are lowercase letters, digits, `.`, `_` and `-`; `kit`, `by-key`, `brew.*` and any `auth.*` outside the kit are reserved.
+- For a key of the app's own, such as `order.shipped`, use `setup: { kind: 'one', triggerKey, source: { format: 'jsx' | 'html' | 'mjml', content } }`, with `{{ trigger.<field> }}` merge tags in the source. To declare the payload, pass `payloadSchema: { fields: [{ key, type }] }`, and mark a field that carries a one-time code or sign-in link `secret: true`: Brew uses it to render the email and keeps it out of contacts, logs and analytics. Keys are lowercase letters, digits, `.`, `_` and `-`; `kit`, `by-key`, `brew.*` and any `auth.*` outside the kit are reserved.
 - `list_triggers` shows every key with its `appEmail` link.
 
 ## 4. Explain the sandbox
@@ -44,7 +44,7 @@ Until a sending domain verifies, app emails send from Brew's sandbox. The sandbo
 
 ## 5. Install the SDK and wire the app
 
-Install `@brew.new/sdk` (12.3.0 or later) with the project's package manager.
+Install `@brew.new/sdk` (13.2.0 or later; `brew.send` alone needs 13.1.0) with the project's package manager.
 
 The user creates an API key in Brew under **Settings → API**; the `automations` scope is enough to send. It lives in `BREW_API_KEY`:
 
@@ -87,12 +87,12 @@ import { BrewEmail } from '@brew.new/sdk/next-auth'
 providers: [BrewEmail({ client: brew })] // signIn('brew', { email })
 ```
 
-**Supabase.** Until Brew's hosted hook arrives, run the Send Email Hook as an Edge Function. The kit result for `supabase` mentions the hosted hook (`authDelivery: 'hosted-webhook'`); ignore that note for now.
+**Supabase.** Run the Send Email Hook as an Edge Function. The kit result for `supabase` carries the same hook in `stack.snippets`.
 
 ```ts
 // supabase/functions/send-email/index.ts
-import { createBrewClient } from 'npm:@brew.new/sdk'
-import { createSupabaseSendEmailHook } from 'npm:@brew.new/sdk/supabase'
+import { createBrewClient } from 'npm:@brew.new/sdk@^13.2.0'
+import { createSupabaseSendEmailHook } from 'npm:@brew.new/sdk@^13.2.0/supabase'
 
 Deno.serve(createSupabaseSendEmailHook({
   client: createBrewClient({ apiKey: Deno.env.get('BREW_API_KEY')! }),
@@ -102,7 +102,7 @@ Deno.serve(createSupabaseSendEmailHook({
 
 Deploy with `supabase functions deploy send-email --no-verify-jwt`. The user then points **Authentication > Hooks > Send Email** at the function and stores `BREW_API_KEY` and the hook secret as function secrets. The hook maps each `email_action_type` to its kit key.
 
-**Clerk.** Lifecycle only for now: Clerk keeps sending its own auth emails. Set up the kit with `sets: ['lifecycle']` and send the welcome email from the `user.created` webhook with `await brew.send('lifecycle.welcome', { email, userName })`. Auth emails delivered from Clerk to Brew are coming.
+**Clerk.** Lifecycle only for now: Clerk keeps sending its own auth emails, and the kit for `clerk` sets up only the lifecycle keys. Send the welcome email from the `user.created` webhook with `await brew.send('lifecycle.welcome', { email, userName })`. Auth emails delivered from Clerk to Brew are coming.
 
 **Firebase and custom auth.** Generate the link or code in the app, then send it. For Firebase, call the Admin SDK link generators (`generatePasswordResetLink`, `generateEmailVerificationLink`) instead of Firebase's own email methods:
 
