@@ -54,10 +54,11 @@ The result's `variables` lists every merge variable the design reads: `trigger.*
 
 Call `set_up_app_email` with `setup: { kind: 'one', triggerKey, source: { format, content }, subject, from: { localPart, name } }`, once per key.
 
-- `source` is the markup with `{{ trigger.<field> }}` tags already in place, so pass the converted form from step 3; the setup does not take the import options, and a React Email file with props would fold them. The fields the tags read become the key's payload contract. Pass `payloadSchema: { fields: [{ key, type, secret: true }] }` for values that carry a one-time code or sign-in link (`confirmationUrl`, `otp`): Brew uses them to render the email and keeps them out of contacts, logs and analytics.
+- `source` takes the original markup with the same modes step 3 used (`props: 'merge_tags'`, `placeholders: 'resend'`, `variables`), so the setup converts it the same way; without `props: 'merge_tags'`, a React Email file's props fold into their preview values. The fields the tags read become the key's payload contract. Pass `payloadSchema: { fields: [{ key, type, secret: true }] }` for values that carry a one-time code or sign-in link (`confirmationUrl`, `otp`): Brew uses them to render the email and keeps them out of contacts, logs and analytics.
 - `subject` and `from` replace the per-call `subject` and `from` of Resend. A subject can use merge tags. Reply-to is a domain default (`update_domain`).
 - A stock email with no design of its own (a verify email, a reset, a welcome) can take Brew's themed starter: `setup: { kind: 'one', triggerKey: 'auth.password-reset' }`. Keep the user's own design unless they ask for the starter.
 - The call publishes an automation, so on OAuth and organization connections it returns a confirmation request first. Show it, and after approval repeat the same call with `confirmed: true` and the request's `confirmation_id`. A re-run changes only what differs.
+- A key whose trigger already starts a published automation that no setup made answers `409 APP_EMAIL_TRIGGER_IN_USE` with `details.automationIds`, since every send would go out twice. Ask the user whether to unpublish those automations or keep sending from them. A marketing `domainId` on an auth key answers `422 APP_EMAIL_DOMAIN_PURPOSE_MISMATCH`: pass a transactional domain, or none.
 - The setup builds its own design from `source`, so the draft from step 3 is a spare. Offer to delete it with `delete_email`, which is permanent, so ask first.
 
 ## 5. Swap the code

@@ -34,7 +34,8 @@ Call `set_up_app_email` with `setup: { kind: 'kit', stack: '<stack>' }`. It crea
 
 - The call publishes automations that email the person named in each payload, so on OAuth and organization connections it returns a confirmation request first. Show it to the user. After they approve, repeat the same call with `confirmed: true` and the request's `confirmation_id`.
 - Each entry in `results` is `ok: true` with its `sender`, `payloadSchema` and `fireExample`, or `ok: false` with an `error`. One failing key does not stop the others; run the call again to finish them. `stack.snippets` holds code for the chosen library.
-- A re-run changes only what differs. A design someone edited in Brew is kept unless the call passes `overwrite: true` (otherwise `409 APP_EMAIL_EDITED_IN_BREW`).
+- A re-run changes only what differs. A design someone edited in Brew is kept unless the call passes `overwrite: true` (otherwise `409 APP_EMAIL_EDITED_IN_BREW`). A draft someone saved in Brew since takes the setup's changes but stays unpublished, with a `DRAFT_SAVED_NOT_LIVE` warning.
+- Other refusals, per key in `results` or as the error of a one-key call: `409 APP_EMAIL_TRIGGER_IN_USE` when the key's trigger already starts a published automation no setup made (ask whether to unpublish the automations in `details.automationIds` or keep sending from them), `422 APP_EMAIL_DOMAIN_PURPOSE_MISMATCH` when `domainId` is a marketing domain for an auth, trial-ending or payment-failed key (pass a transactional domain, or no `domainId`), `409 CONTRACT_LOCKED_BY_PUBLISHED_AUTOMATIONS` when a `payloadSchema` drops or retypes a field the live automation reads, and `409 APP_EMAIL_SETUP_IN_PROGRESS` while another setup of the key is writing (run it again later).
 - For a key of the app's own, such as `order.shipped`, use `setup: { kind: 'one', triggerKey, source: { format: 'jsx' | 'html' | 'mjml', content } }`, with `{{ trigger.<field> }}` merge tags in the source. To declare the payload, pass `payloadSchema: { fields: [{ key, type }] }`, and mark a field that carries a one-time code or sign-in link `secret: true`: Brew uses it to render the email and keeps it out of contacts, logs and analytics. Keys are lowercase letters, digits, `.`, `_` and `-`; `kit`, `by-key`, `brew.*` and any `auth.*` outside the kit are reserved.
 - `list_triggers` shows every key with its `appEmail` link.
 
@@ -87,7 +88,9 @@ import { BrewEmail } from '@brew.new/sdk/next-auth'
 providers: [BrewEmail({ client: brew })] // signIn('brew', { email })
 ```
 
-**Supabase.** Run the Send Email Hook as an Edge Function. The kit result for `supabase` carries the same hook in `stack.snippets`.
+**Supabase.** Brew can be the Send Email Hook itself, so the app deploys nothing for auth emails. In Supabase, the user adds a Send Email hook under **Authentication > Hooks > Send Email** (HTTPS) and generates its secret. They connect Supabase Auth in Brew with that secret (in the Brew app under **Integrations**, `brew-cli integrations connect supabase_auth` from CLI 0.21.0, or `brew.integrations.connect` from SDK 13.3.0), then save the webhook URL Brew returns as the hook URL. Brew checks the signature and sends the kit key for each email type; an email Brew cannot send fails the sign-up or sign-in with the reason. Connecting again is safe: the webhook URL stays the same and a new secret replaces the old one. The kit result's `stack.note` says the same.
+
+To host the hook in the user's own Supabase project instead, run it as an Edge Function. The kit result for `supabase` carries it in `stack.snippets`.
 
 ```ts
 // supabase/functions/send-email/index.ts
@@ -102,7 +105,7 @@ Deno.serve(createSupabaseSendEmailHook({
 
 Deploy with `supabase functions deploy send-email --no-verify-jwt`. The user then points **Authentication > Hooks > Send Email** at the function and stores `BREW_API_KEY` and the hook secret as function secrets. The hook maps each `email_action_type` to its kit key.
 
-**Clerk.** Lifecycle only for now: Clerk keeps sending its own auth emails, and the kit for `clerk` sets up only the lifecycle keys. Send the welcome email from the `user.created` webhook with `await brew.send('lifecycle.welcome', { email, userName })`. Auth emails delivered from Clerk to Brew are coming.
+**Clerk.** Clerk hands its auth emails to Brew in the `email.created` webhook, and the kit for `clerk` sets up the keys Clerk routes plus the lifecycle keys. The user connects Clerk in Brew with the webhook endpoint's signing secret (`whsec_...`; the Brew app, `brew-cli integrations connect clerk`, or `brew.integrations.connect`) and subscribes that endpoint to `email.created`. Then they turn off **Delivered by Clerk** (Clerk Dashboard, Customization, Emails) for exactly the templates `stack.note` lists, and keep it on for every other template. Until a template is off, Clerk sends it and Brew sends nothing, so nobody gets two. The app still sends the lifecycle emails, such as the welcome email from the `user.created` webhook: `await brew.send('lifecycle.welcome', { email, userName })`.
 
 **Firebase and custom auth.** Generate the link or code in the app, then send it. For Firebase, call the Admin SDK link generators (`generatePasswordResetLink`, `generateEmailVerificationLink`) instead of Firebase's own email methods:
 
