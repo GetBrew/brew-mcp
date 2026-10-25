@@ -45,7 +45,7 @@ Until a sending domain verifies, app emails send from Brew's sandbox. The sandbo
 
 ## 5. Install the SDK and wire the app
 
-Install `@brew.new/sdk` (13.2.0 or later; `brew.send` alone needs 13.1.0) with the project's package manager.
+Install `@brew.new/sdk` (13.6.0 or later; `brew.send` alone needs 13.5.0) with the project's package manager.
 
 The user creates an API key in Brew under **Settings → API**; the `automations` scope is enough to send. It lives in `BREW_API_KEY`:
 
@@ -88,14 +88,14 @@ import { BrewEmail } from '@brew.new/sdk/next-auth'
 providers: [BrewEmail({ client: brew })] // signIn('brew', { email })
 ```
 
-**Supabase.** Brew can be the Send Email Hook itself, so the app deploys nothing for auth emails. In Supabase, the user adds a Send Email hook under **Authentication > Hooks > Send Email** (HTTPS) and generates its secret. They connect Supabase Auth in Brew with that secret (in the Brew app under **Integrations**, `brew-cli integrations connect supabase_auth` from CLI 0.21.0, or `brew.integrations.connect` from SDK 13.3.0), then save the webhook URL Brew returns as the hook URL. Brew checks the signature and sends the kit key for each email type; an email Brew cannot send fails the sign-up or sign-in with the reason. Connecting again is safe: the webhook URL stays the same and a new secret replaces the old one. The kit result's `stack.note` says the same.
+**Supabase.** Brew can be the Send Email Hook itself, so the app deploys nothing for auth emails. In Supabase, the user adds a Send Email hook under **Authentication > Hooks > Send Email** (HTTPS) and generates its secret. They connect Supabase Auth in Brew with that secret (in the Brew app under **Integrations**, `brew-cli integrations connect supabase_auth` from CLI 0.22.0, or `brew.integrations.connect` from SDK 13.7.0), then save the webhook URL Brew returns as the hook URL. Brew checks the signature and sends the kit key for each email type; an email Brew cannot send fails the sign-up or sign-in with the reason. Connecting again is safe: the webhook URL stays the same and a new secret replaces the old one. The kit result's `stack.note` says the same.
 
 To host the hook in the user's own Supabase project instead, run it as an Edge Function. The kit result for `supabase` carries it in `stack.snippets`.
 
 ```ts
 // supabase/functions/send-email/index.ts
-import { createBrewClient } from 'npm:@brew.new/sdk@^13.2.0'
-import { createSupabaseSendEmailHook } from 'npm:@brew.new/sdk@^13.2.0/supabase'
+import { createBrewClient } from 'npm:@brew.new/sdk@^13.6.0'
+import { createSupabaseSendEmailHook } from 'npm:@brew.new/sdk@^13.6.0/supabase'
 
 Deno.serve(createSupabaseSendEmailHook({
   client: createBrewClient({ apiKey: Deno.env.get('BREW_API_KEY')! }),

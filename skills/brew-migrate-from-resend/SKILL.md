@@ -63,7 +63,7 @@ Call `set_up_app_email` with `setup: { kind: 'one', triggerKey, source: { format
 
 ## 5. Swap the code
 
-Install `@brew.new/sdk` (13.2.0 or later; `brew.send` alone needs 13.1.0, the `@brew.new/sdk/resend` adapter needs 13.2.0). Change one call site at a time, in separate commits, so each can be reverted.
+Install `@brew.new/sdk` (13.6.0 or later; `brew.send` alone needs 13.5.0, the `@brew.new/sdk/resend` adapter needs 13.6.0). Change one call site at a time, in separate commits, so each can be reverted.
 
 Direct (the end state):
 
