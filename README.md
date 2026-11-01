@@ -162,7 +162,7 @@ Working from a terminal or CI instead? The Brew CLI has its own skill: `npx skil
 | --- | --- |
 | Emails | Design from a prompt, edit, import (HTML, MJML, React Email, Figma), clone, version, and audit on-brand emails |
 | Sending | Test sends, one-off campaigns, scheduled and gradual delivery, pause, resume and cancel |
-| Audiences and contacts | Saved audience filters, contact updates, CSV updates, email validation, custom fields |
+| Audiences and contacts | Saved audience filters, contact imports (CSV or JSON) and updates, email validation, custom fields |
 | Automations | Triggered flows with waits, filters and splits; test, publish, run, and fire events from app code |
 | Domains | Register, verify and monitor sending-domain health (SPF, DKIM, DMARC) and inbox placement |
 | Analytics | Overview, per-send and per-recipient engagement, automation performance, insights |

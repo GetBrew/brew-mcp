@@ -34,7 +34,7 @@ Live sends need a verified sending domain. If none exists, `create_domain` retur
 
 - `search_contacts` finds contacts and, with `count: true`, totals and breakdowns. `list_contact_fields` shows what can be filtered on.
 - An audience is a saved filter, matched live at send time. `create_audience`, `update_audience`, and `list_audiences` with `include: ["count"]` for its current size.
-- The MCP updates existing contacts (`update_contact`, `update_contacts_csv`, `create_contact_field`) and validates deliverability (`validate_contacts`). New contacts join through signup forms, integrations, imports in the Brew app, and trigger fires.
+- `import_contacts_csv` (CSV text) and `import_contacts` (JSON rows) create missing contacts and update existing ones; `dryRun: true` previews a batch. `update_contact` changes one existing contact and never creates one. `create_contact_field` adds a custom field, and `validate_contacts` checks deliverability.
 - `delete_contacts` is permanent. On OAuth and organization connections it returns the same confirmation request as a send.
 
 ## Automations and app events
