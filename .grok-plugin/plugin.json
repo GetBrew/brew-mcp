@@ -1,7 +1,7 @@
 {
   "name": "brew",
-  "version": "1.0.0",
-  "description": "Brew skills for Grok — generate on-brand emails, send and schedule emails, build automations, manage audiences, and read analytics over the hosted Brew MCP.",
+  "version": "1.1.0",
+  "description": "Brew skills for Grok. Design on-brand emails, send and schedule campaigns, build automations, manage audiences, and read analytics over the hosted Brew MCP.",
   "logo": "assets/logo.svg",
   "author": {
     "name": "Brew",
