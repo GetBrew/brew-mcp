@@ -63,7 +63,7 @@ Call `set_up_app_email` with `setup: { kind: 'one', triggerKey, source: { format
 
 ## 5. Swap the code
 
-Install `@brew.new/sdk` (13.6.0 or later; `brew.send` alone needs 13.5.0, the `@brew.new/sdk/resend` adapter needs 13.6.0). Change one call site at a time, in separate commits, so each can be reverted.
+Install `@brew.new/sdk` (13.6.0 or later; `brew.send` alone needs 13.5.0, the `@brew.new/sdk/resend` adapter needs 13.6.0). SDK 13.5.0 and 13.6.0 are not yet on npm: if `npm view @brew.new/sdk version` shows an older SDK, tell the user and leave the Resend calls in place. Change one call site at a time, in separate commits, so each can be reverted.
 
 Direct (the end state):
 
@@ -96,7 +96,7 @@ An app that only sends transactional mail needs none of this: a send creates the
 
 1. Unsubscribes and suppressions first. Export the unsubscribed contacts and the complaint and bounce suppressions from Resend, then call `import_domain_unsubscribes` with the CSV text and a marketing `domainId` from `list_domains` (a transactional domain keeps no list). An address Brew does not know is created already unsubscribed everywhere. Brew never re-subscribes an opt-out, so later imports cannot undo this.
 2. Then the subscribed contacts, only those the user can show consent for. `import_contacts_csv` (CSV text) or `import_contacts` (JSON rows), up to 1000 rows a call with `consent: { source: 'import' }`, creates missing contacts and updates existing ones; an opt-out is never re-subscribed (`RESUBSCRIBE_SKIPPED`). Each batch is one entry in Import History. Run it with `dryRun: true` first and show the user the summary. From code, `brew.contacts.importCsv({ csv, consent: { source: 'import' } })` does the same.
-3. `npx @brew.new/cli migrate resend` (`@brew.new/cli` 0.22.0 or later, not yet released) copies contacts, segments, topics and suppressions from a Resend key in `RESEND_API_KEY` and plans the code changes. It writes the plan to `brew.migration.json` and changes nothing until `--apply`. Offer it once it is on npm.
+3. `npx @brew.new/cli migrate resend` (`@brew.new/cli` 0.22.0 or later, not yet on npm) copies contacts, segments, topics and suppressions from a Resend key in `RESEND_API_KEY` and plans the code changes. It writes the plan to `brew.migration.json` and changes nothing until `--apply`. Offer it once it is on npm.
 
 Resend broadcasts and Resend automations are not migrated. Rebuild them in Brew with the user (`create_email`, `save_automation`).
 
