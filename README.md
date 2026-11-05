@@ -51,7 +51,7 @@ The hosted runtime is the source of truth for tool names and schemas. Call `get_
 
 ## Send safety
 
-On OAuth connections, `send_email` pauses before a live send. Call it without `confirmed` first; Brew returns `confirmation_required` with the recipient count. Show that to the user, obtain approval, then call again with the same inputs plus `confirmed: true` and the returned `confirmation_id`. Use a new `idempotency_key` per intended operation and reuse it for retries. Confirmation requirements also cover other sends and destructive operations; see [Authentication & scoping](https://docs.brew.new/api-reference/mcp/authentication-and-scoping).
+On OAuth and organization connections, `send_email` pauses before a live send (and before a test to anyone but the signed-in person). Call it without `confirmed` first; Brew returns `confirmation_required` with the recipient count. Show that to the user, obtain approval, then call again with the same inputs plus `confirmed: true` and the returned `confirmation_id`. Use a new `idempotency_key` per intended operation and reuse it for retries. Confirmation requirements also cover other sends and destructive operations; see [Authentication & scoping](https://docs.brew.new/api-reference/mcp/authentication-and-scoping).
 
 One-off live sends require a verified marketing-purpose domain and existing opted-in contacts. Event-triggered transactional mail follows its automation and domain-purpose contract.
 
