@@ -12,9 +12,9 @@ Start with `get_brew_capabilities`. It returns the live tool catalog, credit cos
 ## Create then send
 
 1. `create_email` from a prompt. Iterate with `edit_email`.
-2. `send_email` with `test: true` to QA.
+2. `send_email` with the `emailId`, a `subject`, `test: true` and one `to` address to QA. A test reaches only a teammate with access to the brand, an address on a verified sending domain of the brand, or, on an OAuth connection (not an API key), the signed-in person's own address or one on their company domain; anyone else is refused with `TEST_RECIPIENT_NOT_ALLOWED`. On OAuth and organization connections a test to anyone but the signed-in person first returns `confirmation_required`, handled as in step 5.
 3. `list_domains` (need a verified sender) and `list_audiences` (or `create_audience`).
-4. For a live send, call `send_email` with `audienceId`, `domainId`, and a unique `idempotency_key`, but **omit `confirmed`**.
+4. For a live send, call `send_email` with the `emailId`, a `subject` (the design's `subjectLine` from `get_email` reuses it), `audienceId`, `domainId`, and a unique `idempotency_key`, but **omit `confirmed`**.
 5. Brew returns `confirmation_required` plus the recipient count. Show that to the user. Only after they approve, call again with the same inputs, `confirmed: true`, and the returned `confirmation_id`.
 6. `get_email_analytics` with `report: { kind: "sends" }` after it goes out.
 
