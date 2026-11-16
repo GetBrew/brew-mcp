@@ -25,7 +25,7 @@ Never send to a live audience without that confirmation step. Live sends require
 - **Segment and send:** `search_contacts` → `create_audience` with filters → design → send.
 - **Automation:** `save_trigger` → design emails → `save_automation` → `test_automation` → `save_automation { published: true }`. Publishing can require confirmation: show the returned request and repeat only after approval with `confirmed: true` and its `confirmation_id`.
 - **Import contacts:** `import_contacts_csv` for CSV text, `import_contacts` for JSON rows. Import only people who opted in. Run it with `dryRun: true` first to read the counts. On OAuth and organization connections the real import returns `confirmation_required` with how many rows create a subscribed contact and the consent record the call wrote. Show that to the user, and repeat the call with `confirmed: true` and its `confirmation_id` only after they approve. Passing `consent` does not skip this step.
-- **Images:** `create_email` and `edit_email` make imagery inside a design. `generate_image`, `create_gif` and `transform_image` make standalone media on clients other than Claude. If `get_brew_capabilities` does not list them, ask for the imagery as part of the email.
+- **Images:** `create_email` and `edit_email` make imagery inside a design. Standalone image, GIF and image-transform tools exist on clients other than Claude, and `get_brew_capabilities` lists them when the connection has them. If it lists none, ask for the imagery as part of the email.
 - **Analyze:** `get_email_analytics` with the `overview`, `sends`, and `events` report kinds. Summarize wins, deliverability issues, and the next experiment.
 
 Docs: https://docs.brew.new/api-reference/mcp/overview
