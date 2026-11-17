@@ -47,6 +47,7 @@ One-off live sends need a verified marketing-purpose domain and existing opted-i
 
 To wire the fire call into application code, `get_trigger_contract` returns a typed payload (`format: "ts"`) or a full wiring brief (`format: "skill"`).
 
+To add auth and lifecycle email to an app (sign-up, password reset, magic link, welcome), use the `brew-add-email-to-app` skill. To move an app's email from Resend, use `brew-migrate-from-resend`.
 ## Images
 
 `create_email` and `edit_email` make imagery inside a design. Standalone image, GIF and image-transform tools exist on clients other than Claude; `get_brew_capabilities` lists them when the connection has them. If it lists none, ask for the imagery as part of the email.
