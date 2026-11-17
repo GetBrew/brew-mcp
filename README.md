@@ -175,13 +175,15 @@ Working from a terminal or CI instead? The Brew CLI has its own skill: `npx skil
 | App emails | Auth and lifecycle emails set up by trigger key, sent from code with `brew.send`, with a team-only sandbox until a domain verifies; React Email files and Resend templates imported as designs |
 | Domains | Register, verify and monitor sending-domain health (SPF, DKIM, DMARC) and inbox placement |
 | Analytics | Overview, per-send and per-recipient engagement, automation performance, insights |
-| Brand and templates | Brand identity, the brand image library, and the public template and sequence gallery |
+| Brand and media | Brand identity, image search, template gallery, and image generation, GIFs and image transforms (not offered to Claude clients) |
 
 The hosted runtime is the source of truth for tool names and schemas. Call `get_brew_capabilities` first to load the current catalog and the guided workflows (`launch_email_campaign`, `build_segment_and_send`, `set_up_automation`, `wire_trigger_from_code`, `analyze_campaign_performance`, `personalize_with_crm`, `improve_deliverability`, `configure_brand`, `run_audience_automation` and, on organization connections, `onboard_brand`).
 
 ## Send safety
 
 On OAuth and organization connections, anything that emails real people or deletes contact data pauses first. Call the tool, such as `send_email`, and Brew returns a confirmation request with the recipient count. Show it to the user. After they approve, call again with the same inputs plus `confirmed: true` and the request's `confirmation_id`. Use a new `idempotency_key` for each intended operation, and reuse the same `idempotency_key` on retries so a retry never sends twice. Confirmation requirements also cover other sends and destructive operations; see [Authentication and scoping](https://docs.brew.new/api-reference/mcp/authentication-and-scoping). Brand API-key connections do not pause, so get the user's approval before the first live call.
+
+Contact imports pause the same way. `import_contacts` and `import_contacts_csv` return `confirmation_required` with how many rows create a subscribed contact, how many opt out, and the consent record the call wrote. Show that to the user and repeat the call with `confirmed: true` and the `confirmation_id` only after they approve. `dryRun: true` returns the counts without asking.
 
 One-off live sends require a verified marketing-purpose domain and existing opted-in contacts. Event-triggered transactional mail follows its automation and domain-purpose contract.
 
