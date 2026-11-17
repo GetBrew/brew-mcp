@@ -1,0 +1,20 @@
+{
+  "name": "brew",
+  "displayName": "Brew",
+  "version": "1.1.0",
+  "description": "Brew skill and MCP server for Claude Code. Design, send and automate on-brand email from a prompt.",
+  "author": {
+    "name": "Brew",
+    "email": "support@brew.new",
+    "url": "https://brew.new"
+  },
+  "homepage": "https://brew.new/mcp",
+  "repository": "https://github.com/GetBrew/brew-mcp",
+  "license": "MIT",
+  "keywords": ["email", "brew", "mcp", "campaigns", "automations", "transactional-email"],
+  "icon": "./assets/icon-512.png",
+  "documentationUrl": "https://docs.brew.new/api-reference/mcp/overview",
+  "supportUrl": "https://brew.new/support",
+  "privacyPolicyUrl": "https://docs.brew.new/legal/privacy-policy",
+  "termsOfServiceUrl": "https://docs.brew.new/legal/terms-of-service"
+}

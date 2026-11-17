@@ -1,0 +1,11 @@
+{
+  "name": "brew",
+  "version": "1.1.0",
+  "description": "Brew MCP server for Gemini CLI. Design, send and automate on-brand email from a prompt.",
+  "mcpServers": {
+    "brew": {
+      "httpUrl": "https://brew.new/api/mcp"
+    }
+  },
+  "contextFileName": "GEMINI.md"
+}

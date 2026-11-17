@@ -1,8 +1,8 @@
 {
   "name": "brew",
   "displayName": "Brew",
-  "description": "Skills and MCP server for the Brew email platform — generate, send, schedule, automate, segment, and analyze emails from Cursor.",
-  "version": "1.0.0",
+  "description": "Skill and MCP server for Brew, the AI-native email platform. Design, send, schedule, automate and analyze email from Cursor.",
+  "version": "1.1.0",
   "logo": "assets/logo.svg",
   "author": {
     "name": "Brew",
